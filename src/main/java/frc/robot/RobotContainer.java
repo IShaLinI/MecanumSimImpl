@@ -4,7 +4,12 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.PathConstraints;
+import com.pathplanner.lib.PathPlanner;
+import com.pathplanner.lib.PathPlannerTrajectory;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -37,6 +42,9 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return new PrintCommand("No Auto");
+
+    PathPlannerTrajectory test = PathPlanner.loadPath("TestPath", new PathConstraints(3, 1));
+
+    return mDrivetrain.followTrajectoryCommand(test, true).andThen(new InstantCommand(mDrivetrain::stop));
   }
 }
