@@ -1,12 +1,13 @@
 package frc.robot.subsystems.drive;
 
-import org.littletonrobotics.junction.Logger;
+// import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.MecanumDrivePoseEstimator;
@@ -21,6 +22,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotGearing;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -49,6 +52,8 @@ public class Drivetrain extends SubsystemBase {
   private final MecanumDrivePoseEstimator mPoseEstimator;
 
   private final MecanumSimulation mSimulation;
+  
+  private Field2d mField;
 
   public Drivetrain() {
 
@@ -117,6 +122,10 @@ public class Drivetrain extends SubsystemBase {
       this::getMotorSets
     );
 
+    mField = new Field2d();
+
+    SmartDashboard.putData(mField);
+
   }
 
   @Override
@@ -124,7 +133,9 @@ public class Drivetrain extends SubsystemBase {
 
     updateOdometry();
 
-    Logger.getInstance().recordOutput("Robot Position", getPose());
+    mField.setRobotPose(getPose());
+    // Logger.getInstance().recordOutput("Robot Position", getPose());
+    // Logger.getInstance().recordOutput("Front Left M/s", getCurrentState().frontLeftMetersPerSecond);
 
   }
 
@@ -189,10 +200,10 @@ public class Drivetrain extends SubsystemBase {
                 mBackLeft.getSelectedSensorVelocity() * Constants.DriveConstants.kFalconToMeters * 10, 
                 speeds.rearLeftMetersPerSecond);
 
-    mFrontLeft.setVoltage(frontLeftFeedForward + frontLeftOutput);
-    mFrontRight.setVoltage(frontRightFeedForward + frontRightOutput);
-    mBackLeft.setVoltage(backLeftFeedForward + backLeftOutput);
-    mBackRight.setVoltage(backRightFeedForward + backRightOutput);
+    mFrontLeft.setVoltage(MathUtil.clamp(frontLeftFeedForward + frontLeftOutput, -12, 12));
+    mFrontRight.setVoltage(MathUtil.clamp(frontRightFeedForward + frontRightOutput, -12, 12));
+    mBackLeft.setVoltage(MathUtil.clamp(backLeftFeedForward + backLeftOutput, -12, 12));
+    mBackRight.setVoltage(MathUtil.clamp(backRightFeedForward + backRightOutput, -12, 12));
 
   }
 
@@ -204,14 +215,7 @@ public class Drivetrain extends SubsystemBase {
 
   public void resetPose(Pose2d position) {
 
-    resetGyro();
-    
-    mFrontRight.setSelectedSensorPosition(0);
-    mFrontLeft.setSelectedSensorPosition(0);
-    mBackRight.setSelectedSensorPosition(0);
-    mBackLeft.setSelectedSensorPosition(0);
-
-    mPoseEstimator.resetPosition(position.getRotation(), getCurrentDistances(), position);
+    mPoseEstimator.resetPosition(mPigeon.getRotation2d(), getCurrentDistances(), position);
 
   }
   
@@ -234,23 +238,18 @@ public class Drivetrain extends SubsystemBase {
 
   }
 
-  public void easyDrive(double xPower, double yPower, double zPower) {
-
-    mFrontLeft.set(0.7 * (xPower + yPower + zPower));
-    mFrontRight.set(0.7 * (-xPower + yPower + zPower));
-    mBackLeft.set(0.7 * (xPower -yPower + zPower));
-    mBackRight.set(0.7 * (-xPower -yPower + zPower));
-
-  }
-
   public void updateOdometry() {
     mPoseEstimator.update(mPigeon.getRotation2d(), getCurrentDistances());
   }
  
-@Override
-public void simulationPeriodic() {
-    mSimulation.update();
-}
+  @Override
+  public void simulationPeriodic() {
+      mSimulation.update();
+  }
+
+  public MecanumDriveKinematics getKinematics() {
+    return mKinematics;
+  }
 
 }
 
