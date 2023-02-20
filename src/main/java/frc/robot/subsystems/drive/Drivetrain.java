@@ -1,5 +1,8 @@
 package frc.robot.subsystems.drive;
 
+import java.util.ArrayList;
+import java.util.List;
+
 // import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
@@ -27,12 +30,14 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotGearing;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 
 public class Drivetrain extends SubsystemBase {
 
@@ -61,6 +66,8 @@ public class Drivetrain extends SubsystemBase {
   private final MecanumSimulation mSimulation;
   
   private Field2d mField;
+  private FieldObject2d mTraj;
+  private List<Pose2d> mTrajPoints;
 
   public Drivetrain() {
 
@@ -130,6 +137,15 @@ public class Drivetrain extends SubsystemBase {
     );
 
     mField = new Field2d();
+    mTraj = mField.getObject("waypoints");
+    mTrajPoints = new ArrayList<Pose2d>();
+
+    mTrajPoints.add(new Pose2d(7,1, new Rotation2d()));
+    mTrajPoints.add(new Pose2d(9.5,5, new Rotation2d()));
+    mTrajPoints.add(new Pose2d(7,3.25, new Rotation2d(-Math.PI/2)));
+    mTrajPoints.add(new Pose2d(7,1, new Rotation2d()));
+
+    mTraj.setPoses(mTrajPoints);
 
     SmartDashboard.putData(mField);
 
@@ -270,9 +286,9 @@ public class Drivetrain extends SubsystemBase {
             traj, 
             this::getPose, // Pose supplier
             this.mKinematics, // MecanumDriveKinematics
-            new PIDController(0, 0, 0), // X controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
-            new PIDController(0, 0, 0), // Y controller (usually the same values as X controller)
-            new PIDController(0, 0, 0), // Rotation controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
+            new PIDController(1.5, 0, 0), // X controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
+            new PIDController(1.5, 0, 0), // Y controller (usually the same values as X controller)
+            new PIDController(1, 0, 0), // Rotation controller. Tune these values for your robot. Leaving them 0 will only use feedforwards.
             3.0, // Max wheel velocity meters per second
             this::setSpeeds, // MecanumDriveWheelSpeeds consumer
             false, // Should the path be automatically mirrored depending on alliance color. Optional, defaults to true

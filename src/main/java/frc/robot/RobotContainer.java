@@ -43,7 +43,7 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
 
-    PathPlannerTrajectory test = PathPlanner.loadPath("TestPath", new PathConstraints(3, 1));
+    PathPlannerTrajectory test = PathPlanner.loadPath("TestPath", new PathConstraints(2, 1));
 
     return mDrivetrain.followTrajectoryCommand(test, true).andThen(new InstantCommand(mDrivetrain::stop));
   }
