@@ -7,10 +7,8 @@ package frc.robot;
 import com.pathplanner.lib.PathConstraints;
 import com.pathplanner.lib.PathPlanner;
 import com.pathplanner.lib.PathPlannerTrajectory;
-
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.custom.Deadbander;
@@ -43,7 +41,7 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
 
-    PathPlannerTrajectory test = PathPlanner.loadPath("TestPath", new PathConstraints(2, 1));
+    PathPlannerTrajectory test = PathPlanner.loadPath("TestPath", new PathConstraints(2, 0.5));
 
     return mDrivetrain.followTrajectoryCommand(test, true).andThen(new InstantCommand(mDrivetrain::stop));
   }
